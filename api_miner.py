@@ -5,12 +5,59 @@ s = requests.Session()
 
 posts = s.get('https://jsonplaceholder.typicode.com/posts')
 
-# users.json() holds completed user data in json format
+# users.json() holds complete user data in list
 users = s.get('https://jsonplaceholder.typicode.com/users')
 
 # loading user data into variable
-data = users.json()
-post = posts.json()
+data = users.json() # this is list
+post = posts.json() # this is list
+
+# this function return list of user id in list
+def user_ids():
+    user_list = []
+    for i in data:
+        user_list.append(i['id'])  # taking only value of key 'id'
+    return user_list
+
+# storing list to a variable
+user_ids_list = user_ids()
+
+# Initializing the dictionary and list
+full_dict = { 'userId':'', 'username':'', 'city':'', 'postId':'', 'title':''}
+full_data = []
+
+# this funtion returns user details for supplied userId in list which includes id, username, address, city
+def user_details(userId):
+    for i in data:
+        if i['id'] == userId:
+            return [i['id'], i['username'], i['address']['city']]
+
+'''
+Picking one user from user_ids_list, and taking one post from post list
+check wether the userId of post matches with picked user from the list
+since posts are arranged in ascending order with respect user such 111,222,333 it will not miss any post
+
+'''
+counter = 0
+for i in user_ids_list:
+    for j in post:
+        counter += 1
+        if j['userId'] == i:
+            value_list = user_details(i)
+            value_list.append(j['id'])
+            value_list.append(j['title'])
+            # zipping dict and value list
+            res = dict(zip(full_dict, value_list))
+            # appedning to full_data list of zipped dict
+            full_data.append(res)
+
+# saving result to outfile
+with open("result.json", "w") as outfile:
+    outfile.write(json.dumps(full_data))
+    print('loaded successfully')
+
+print(counter) 
+# counter value 1000 for 10 user, and 100 posts
 
 # converting json data into string
 # jposts = json.dumps(posts.json())
@@ -37,13 +84,6 @@ post = posts.json()
 # print((data[0]).keys())         
 
 # here data is list, and each objects in the list is a dict, reading id from dict
-def user_ids():
-    user_list = []
-    for i in data:
-        user_list.append(i['id'])
-    return user_list
-
-user_ids_list = user_ids()
 
 # Can print the title from post of first user
 # for i in post:
@@ -69,23 +109,3 @@ for i in user_list:
             print(j[id])
 
 '''
-full_dict = { 'userId':'', 'username':'', 'city':'', 'postId':'', 'title':''}
-full_data = []
-
-def user_details(userId):
-    for i in data:
-        if i['id'] == userId:
-            return [i['id'], i['username'], i['address']['city']]
-
-for i in user_ids_list:
-    for j in post:
-        if j['userId'] == i:
-            value_list = user_details(i)
-            value_list.append(j['id'])
-            value_list.append(j['title'])
-            # print(value_list)
-            res = dict(zip(full_dict, value_list))
-            full_data.append(res)
-
-with open("result.json", "w") as outfile:
-    outfile.write(json.dumps(full_data))
